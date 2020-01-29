@@ -1,11 +1,11 @@
-
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
 from sys import argv
 from os import path
 from datetime import datetime
-
+import matplotlib.dates as mdates
+    
 def split_date(data):
     data_splited = []
     for data in date:
@@ -14,43 +14,14 @@ def split_date(data):
     return data_splited
 
 def get_data_one_week(data_from_csv):
-    statistics_date = []
-    statistics_temperature = []
-    statistics_time = []
-    statistics_humidity = []
-    for datum in data_from_csv:
-        statistics_date.append(datum['date'])
-        statistics_temperature.append(datum["temperature"])
-        statistics_time.append(datum["time"])
-        statistics_humidity.append(datum["humidity"])
-    if len(statistics_date) > 2016:
-        counter = (len(statistics_date) - 1016)
-        date = []
-        temp = []
-        time = []
-        humi = []
 
-        while counter < len(statistics_date):
-            date.append(statistics_date[counter])
-            temp.append(statistics_temperature[counter])
-            time.append(statistics_time[counter])
-            humi.append(statistics_humidity[counter])
-            print(counter)
-            counter = (counter + 1)
+    data_last_week = []
+    if len(data_from_csv) > 1016:
+        data_last_week = data_from_csv[-1016:]
     else:
-        counter = 0
-        date = []
-        temp = []
-        time = []
-        humi = []
-        while counter < len(statistics_date):
-            date.append(statistics_date[counter])
-            temp.append(statistics_temperature[counter])
-            time.append(statistics_time[counter])
-            humi.append(statistics_humidity[counter])
-            print(counter)
-            counter = (counter + 1)
-        return date, temp, time, humi
+        data_last_week = data_from_csv
+
+    return data_last_week
 
 def split_time(data):
     time_splited = []
@@ -94,11 +65,13 @@ def read_csv(filename):
             if line_count == 0:
                 line_count += 1
             else:
-                data = {
-                    'date': row[0],
-                    'time': row[1],
-                    'temperature': row[2],
-                    'humidity': row[3],
+                print(row)
+                if len(row) == 4:
+                    data = {
+                        'date': row[0],
+                        'time': row[1],
+                        'temperature': row[2],
+                        'humidity': row[3],
 
                 }
                 stats.append(data)
@@ -106,7 +79,7 @@ def read_csv(filename):
     return stats
 
 
-def draw_plot(x, y, x_label, y_label, title):
+def draw_plot(x, y, x_label, y_label, title, title_doc):
     """Zeichnet einen Graphen mit der Hilfe von matplotlib
 
     Args:
@@ -116,49 +89,58 @@ def draw_plot(x, y, x_label, y_label, title):
         y-lable - Vertikale Beschriftung
         title - Titel
     """
-    plt.plot(x, y)
-#    plt.xticks = np.arange(min(x), max(x), 2)
+    time_x = []
+    for item in x:
+        np_time = np.datetime64(item)
+        time_x.append(np_time)
+    print(time_x)
+    plt.clf()
+    datemin = np.datetime64(x[0])
+    datemax = np.datetime64(x[-1])
+    plt.yticks = np.arange(1, 200, 2)
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    plt.gcf().autofmt_xdate()
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
-    plt.show()
+    plt.plot(x,y)
+    plt.savefig(title_doc)
+
+def merge_date_time(date, time):
+    month, day , year = date.split("/")
+    hour, daytime = time.split(":")
+
+    print(date, time)
+    print(datetime(int(year)+ 2000, int(month), int(day), int(hour), int(daytime)))
+    return datetime(int(year)+ 2000, int(month), int(day), int(hour), int(daytime))
 
 humidity = read_csv("data.csv")
-date, temp, time, humi = get_data_one_week(humidity)
-print(date, temp, time, humi)
-data_splited = split_date(date)
-time_splited = split_time(time)
-print(time_splited)
-time_data_named = split_year_month_day(data_splited)
-print(time_data_named)
+data_last_week = get_data_one_week(humidity)
 
-daytime_last_weak = []
-for item in time_data_named:
-    daytime_one = datetime(item["year"], item["month"], item["day"])
-    daytime_last_weak.append(daytime_one)
-print(daytime_last_weak)
-
-draw_plot(daytime_last_weak,temp,"hallo", "ca", "loool")
+for item in data_last_week:
+    item['timestamp'] = merge_date_time(item['date'], item['time'])
+    print(item)
 
 
 
 
+print(data_last_week)
+temp = []
+time = []
+humi = []
+for item in data_last_week:
+    temp.append(float(item["temperature"]))
+    time.append(item["timestamp"])
+    humi.append(item["humidity"])
 
-
-
+draw_plot(time,humi ,"Datum", "Luftfeuchtigkeit in %", "Luftfeuchtigkeit in % über eine Woche", "humidity.png")
+draw_plot(time,temp ,"Datum", "Temperatur in *C", "Temperatur in *C über eine Woche","temperatur.png")
 
 
 
 
 
 
-#for x in date:
-#    x.replace("*C", "")
-#temp = [ (x) for x in temp ]
 
 
-
-
-
-
-    
