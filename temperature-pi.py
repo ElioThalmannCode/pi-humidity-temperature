@@ -5,7 +5,7 @@ from sys import argv
 from os import path
 from datetime import datetime
 import matplotlib.dates as mdates
-    
+import matplotlib.ticker as ticker
 def split_date(data):
     data_splited = []
     for data in date:
@@ -65,7 +65,6 @@ def read_csv(filename):
             if line_count == 0:
                 line_count += 1
             else:
-                print(row)
                 if len(row) == 4:
                     data = {
                         'date': row[0],
@@ -93,12 +92,11 @@ def draw_plot(x, y, x_label, y_label, title, title_doc):
     for item in x:
         np_time = np.datetime64(item)
         time_x.append(np_time)
-    print(time_x)
     plt.clf()
     datemin = np.datetime64(x[0])
     datemax = np.datetime64(x[-1])
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=20))
+    plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(7))
     plt.gcf().autofmt_xdate()
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -106,30 +104,24 @@ def draw_plot(x, y, x_label, y_label, title, title_doc):
     if title == "Luftfeuchtigkeit in % über eine Woche":
         plt.yticks(np.arange(1, 100, step=1))
     else:
-        plt.yticks(np.arange(1, 100, step=0.25))
-    plt.gcf().autofmt_xdate()
+        plt.yticks(np.arange(20, 40, step=0.25))
     plt.plot(x,y)
     plt.savefig(title_doc)
 
 def merge_date_time(date, time):
     month, day , year = date.split("/")
     hour, daytime = time.split(":")
-
-    print(date, time)
-    print(datetime(int(year)+ 2000, int(month), int(day), int(hour), int(daytime)))
     return datetime(int(year)+ 2000, int(month), int(day), int(hour), int(daytime))
 
-humidity = read_csv("data.csv")
+humidity = read_csv("humidity.csv")
 data_last_week = get_data_one_week(humidity)
 
 for item in data_last_week:
     item['timestamp'] = merge_date_time(item['date'], item['time'])
-    print(item)
 
 
 
 
-print(data_last_week)
 temp = []
 time = []
 humi = []
