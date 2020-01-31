@@ -97,13 +97,17 @@ def draw_plot(x, y, x_label, y_label, title, title_doc):
     plt.clf()
     datemin = np.datetime64(x[0])
     datemax = np.datetime64(x[-1])
-    plt.yticks = np.arange(1, 200, 2)
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
-    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=20))
     plt.gcf().autofmt_xdate()
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
+    if title == "Luftfeuchtigkeit in % über eine Woche":
+        plt.yticks(np.arange(1, 100, step=1))
+    else:
+        plt.yticks(np.arange(1, 100, step=0.25))
+    plt.gcf().autofmt_xdate()
     plt.plot(x,y)
     plt.savefig(title_doc)
 
@@ -132,7 +136,7 @@ humi = []
 for item in data_last_week:
     temp.append(float(item["temperature"]))
     time.append(item["timestamp"])
-    humi.append(item["humidity"])
+    humi.append(float(item["humidity"]))
 
 draw_plot(time,humi ,"Datum", "Luftfeuchtigkeit in %", "Luftfeuchtigkeit in % über eine Woche", "humidity.png")
 draw_plot(time,temp ,"Datum", "Temperatur in *C", "Temperatur in *C über eine Woche","temperatur.png")
