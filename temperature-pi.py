@@ -78,7 +78,7 @@ def read_csv(filename):
     return stats
 
 
-def draw_plot(x, y, x_label, y_label, title, title_doc):
+def draw_plot(x, y, x_label, y_label, title, document):
     """Zeichnet einen Graphen mit der Hilfe von matplotlib
 
     Args:
@@ -106,7 +106,7 @@ def draw_plot(x, y, x_label, y_label, title, title_doc):
     else:
         plt.yticks(np.arange(20, 40, step=0.25))
     plt.plot(x,y)
-    plt.savefig(title_doc)
+    plt.savefig(title_document)
 
 def merge_date_time(date, time):
     month, day , year = date.split("/")
